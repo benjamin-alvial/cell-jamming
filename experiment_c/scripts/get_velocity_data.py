@@ -19,7 +19,7 @@ def get_velocity_data(delta_frames):
     # Example: if original is f1 f2 f3 f4 f5 f6 f7 f8 and delta_frames = 3,
     # velocity will be calculated between f1 f4 f7,
     # resulting in a total of 2 velocities.
-    results_data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta/
+    results_data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta/"
     new_csv_name = "velocities_delta_"+str(delta_frames)+".csv"
 
     df_original = pd.read_csv(os.path.join(csv_dir, csv_name), skiprows=[1, 2, 3])
@@ -62,5 +62,5 @@ def get_velocity_data(delta_frames):
     print("Dataframe created and saved in "+os.path.join(results_data_delta_dir, new_csv_name))
     print(df_general)
 
-for option in [12,8,6,4]:
+for option in [10]:
     get_velocity_data(delta_frames=option)

@@ -7,7 +7,7 @@ from PIL import Image
 import os
 import matplotlib.pyplot as plt
 
-images_original_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracter/images_original_tif/"
+images_original_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/images_original_tif/"
 results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/results/csvs_final_mask/"
 results_plots_packing_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/results/plots_packing/"
 

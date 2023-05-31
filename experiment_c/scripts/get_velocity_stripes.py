@@ -15,9 +15,9 @@ def get_velocity_stripes(delta_frames, stripe_amount):
     data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta/"
     new_csv_name = "velocities_delta_"+str(delta_frames)+".csv"
 
-    results_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/results/plots_velocity/velocity_delta_/" + str(delta_frames)
+    results_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/results/plots_velocity/velocity_delta_" + str(delta_frames)
 
-    df_general = pd.read_csv(os.path.join(results_data_delta_dir, new_csv_name))
+    df_general = pd.read_csv(os.path.join(data_delta_dir, new_csv_name))
 
     # Iterate over the frames and generate their dataframe.
     for t in df_general.FRAME.unique():
@@ -67,9 +67,9 @@ def get_velocity_stripes(delta_frames, stripe_amount):
             plt.xlabel('Index')
             plt.ylabel('Value')
             plt.title('frame '+str(t))
-            plt.savefig(os.path.join(results_data_delta_dir,"plot_"+str(t)))
+            plt.savefig(os.path.join(results_plots_dir,"plot_"+str(t)))
             plt.show()
 
-for option in [12]:
+for option in [10]:
     get_velocity_stripes(delta_frames=option, stripe_amount = 10)
 
