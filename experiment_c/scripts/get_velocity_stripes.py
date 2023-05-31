@@ -12,8 +12,10 @@ results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experime
 
 def get_velocity_stripes(delta_frames, stripe_amount):
 
-    results_data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta_" + str(delta_frames) + "/"
+    data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta/"
     new_csv_name = "velocities_delta_"+str(delta_frames)+".csv"
+
+    results_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/results/plots_velocity/velocity_delta_/" + str(delta_frames)
 
     df_general = pd.read_csv(os.path.join(results_data_delta_dir, new_csv_name))
 

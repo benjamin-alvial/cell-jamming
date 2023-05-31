@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/results/csvs_final_mask/"
-w_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/scripts"
+csv_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/"
 csv_name = "frames_1_80.csv"
 
 time_resolution = 2/60 # 2 minutes between frames, to hours
@@ -19,10 +19,10 @@ def get_velocity_data(delta_frames):
     # Example: if original is f1 f2 f3 f4 f5 f6 f7 f8 and delta_frames = 3,
     # velocity will be calculated between f1 f4 f7,
     # resulting in a total of 2 velocities.
-    results_data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta_" + str(delta_frames) + "/"
+    results_data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta/
     new_csv_name = "velocities_delta_"+str(delta_frames)+".csv"
 
-    df_original = pd.read_csv(os.path.join(w_dir, csv_name), skiprows=[1, 2, 3])
+    df_original = pd.read_csv(os.path.join(csv_dir, csv_name), skiprows=[1, 2, 3])
     df = df_original.copy()
     df = df.sort_values(by=['TRACK_ID', 'FRAME'], ascending=True)
     df = df.reset_index(drop=True)
