@@ -14,11 +14,12 @@ csv_name = "frames_1_80.csv"
 time_resolution = 2/60 # 2 minutes between frames, to hours
 space_resolution = 1.5 # 1,5 microns per pixel
 
+# Define delta_frames to calculate velocity between frames. 
+# Example: if original is f1 f2 f3 f4 f5 f6 f7 f8 and delta_frames = 3,
+# velocity will be calculated between f1 f4 f7
+# resulting in a total of 2 velocities located in frames f1 and f4
 def get_velocity_data(delta_frames):
-    # Define delta_frames to calculate velocity between frames. 
-    # Example: if original is f1 f2 f3 f4 f5 f6 f7 f8 and delta_frames = 3,
-    # velocity will be calculated between f1 f4 f7,
-    # resulting in a total of 2 velocities.
+    
     results_data_delta_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/velocity_delta/"
     new_csv_name = "velocities_delta_"+str(delta_frames)+".csv"
 
@@ -38,9 +39,12 @@ def get_velocity_data(delta_frames):
 
         else:
             # Iterate over the frames (except the last, velocities are undefined here) in the track.
-            #for j in range(0, len(df_filtered)-delta_frames): #revisar
-            for j in range(0, len(df_filtered)-delta_frames, delta_frames): #revisar
+            for j in range(0, len(df_filtered)-delta_frames, delta_frames): # Velocity will be calculated for every frame possible.
                 frame = df_filtered['FRAME'][j]
+                
+                if frame != j:
+                    continue
+
                 pos_x = df_filtered['POSITION_X'][j]
                 pos_y = df_filtered['POSITION_Y'][j]
                 vel_x = (space_resolution/time_resolution) * (df_filtered['POSITION_X'][j + delta_frames] - df_filtered['POSITION_X'][j])
@@ -62,5 +66,5 @@ def get_velocity_data(delta_frames):
     print("Dataframe created and saved in "+os.path.join(results_data_delta_dir, new_csv_name))
     print(df_general)
 
-for option in [10]:
+for option in [12, 10, 8, 6, 4]:
     get_velocity_data(delta_frames=option)

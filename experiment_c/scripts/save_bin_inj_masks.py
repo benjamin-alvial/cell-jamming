@@ -36,6 +36,7 @@ for i in range(1, 81):
 
     binarized_array = np.array(binarized_image)
 
+    # ONE WHITE PER ROW
     # Iterate over each row of the image
     for row in range(binarized_array.shape[0]):
         found_white_pixel = False
@@ -50,6 +51,45 @@ for i in range(1, 81):
             else:
                 if binarized_array[row, col] == True:
                     found_white_pixel = True
+
+    # EVERY ROW HAS ONE WHITE
+    # Patch upper hole
+    found_uppermost_white_pixel = False
+    for row in range(binarized_array.shape[0]):
+        
+        # Iterate over each pixel in the row
+        for col in range(binarized_array.shape[1]):
+
+                if binarized_array[row, col] == True:
+                    uppermost_white_pixel_col = col
+                    uppermost_white_pixel_row = row
+                    found_uppermost_white_pixel = True
+                    break
+
+        if found_uppermost_white_pixel:
+            break
+
+    for row in range(uppermost_white_pixel_row):
+        binarized_array[row, uppermost_white_pixel_col] = 1
+
+    # Patch lower hole
+    found_lowermost_white_pixel = False
+    for row in reversed(range(binarized_array.shape[0])):
+        
+        # Iterate over each pixel in the row
+        for col in range(binarized_array.shape[1]):
+
+                if binarized_array[row, col] == True:
+                    lowermost_white_pixel_col = col
+                    lowermost_white_pixel_row = row
+                    found_lowermost_white_pixel = True
+                    break
+
+        if found_lowermost_white_pixel:
+            break
+            
+    for row in reversed(range(lowermost_white_pixel_row, binarized_array.shape[0])):
+        binarized_array[row, lowermost_white_pixel_col] = 1
 
     injection_image = Image.fromarray(binarized_array)
     injection_image.save(os.path.join(results_injection_dir, img_injection_name))

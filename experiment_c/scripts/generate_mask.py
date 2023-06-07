@@ -48,6 +48,7 @@ def get_mask(injection_image, offset, delta_x):
                     i -= 1
                 else:
                     STATE = 'STRIPES'
+                    mask_array[row][col] = 0
 
             elif STATE == 'STRIPES':
                 if j > 0:
@@ -55,6 +56,7 @@ def get_mask(injection_image, offset, delta_x):
                     j -= 1
                 else:
                     stripe_idx += 1
+                    mask_array[row][col] = stripe_idx
                     j = delta_x
 
     return mask_array
