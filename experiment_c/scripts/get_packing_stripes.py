@@ -44,7 +44,7 @@ def get_packing_stripes(stripe_amount):
                 pixel_value = pixel_data[x, y]
                 stripe_idx = int(mask_array[y][x])
 
-                if stripe_idx < 0 or stripe_idx >= 10: # WIP: get real injection near borders.
+                if stripe_idx < 0 or stripe_idx >= 10:
                     continue
 
                 # Check if the pixel is black (0) or non-black (any other value)
@@ -60,11 +60,17 @@ def get_packing_stripes(stripe_amount):
             total_pixels = total_pixels_stripes[k]
             packing_fraction_stripes[k] = non_black_pixels_stripes[k] / total_pixels
 
+        fig, ax = plt.subplots()
+
         plt.plot(packing_fraction_stripes)
-        plt.xlabel('Index')
-        plt.ylabel('Packing fraction')
+
+        ax.set_ylim(0.3, 0.5)
+        ax.set_xlabel('Index')
+        ax.set_ylabel('Packing fraction')
         plt.title('frame '+str(t))
+
         plt.savefig(os.path.join(results_plots_packing_dir,"packing_"+str(t)))
         #plt.show()
+        plt.close()       
 
 get_packing_stripes(stripe_amount = 10)

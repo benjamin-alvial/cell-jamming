@@ -24,7 +24,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
 
         t = int(t+1)
 
-        df_for_frame = df_general[df_general['FRAME'] == t]
+        df_for_frame = df_general[df_general['FRAME'] - t < 0.001]
         df_for_frame = df_for_frame.reset_index(drop=True)
 
         csv_mask_name = 'final_mask_1_80__' + str(t) + '.csv'
@@ -33,15 +33,16 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         n_spots_stripes = [0] * stripe_amount
         vel_x_stripes = [0] * stripe_amount
         vel_y_stripes = [0] * stripe_amount
+        vel_x_normalized_stripes = [0] * stripe_amount
+        vel_y_normalized_stripes = [0] * stripe_amount
 
         average_speed_stripes = [0] * stripe_amount # 1/N * sum(|vect vj|)
         average_module_y_vel = [0] * stripe_amount # 1/N * sum(|vect vyj|)
         average_module_x_vel = [0] * stripe_amount # 1/N * sum(|vect vxj|)
-        module_average_velocity_stripes = [0] * stripe_amount # | 1/N * sum(vect j)|
+        module_average_velocity_stripes = [0] * stripe_amount # | 1/N * sum((vect j)/|vect j|) |
 
         csv_mask_name = 'final_mask_1_80__' + str(t) + '.csv'
         mask_array = np.loadtxt(os.path.join(results_masks_dir,csv_mask_name), delimiter=',')
-
         
         for j in range(0, len(df_for_frame)):
             x, y = round(df_for_frame['POS_X'][j]), round(df_for_frame['POS_Y'][j])
@@ -49,12 +50,17 @@ def get_velocity_stripes(delta_frames, stripe_amount):
 
             # Find the stripe
             stripe_idx = int(mask_array[y][x])
-            if stripe_idx < 0:
+            if stripe_idx < 0 or stripe_idx >= 10:
+                continue
+
+            if math.sqrt(vx**2+vy**2) == 0:
                 continue
 
             n_spots_stripes[stripe_idx] += 1
             vel_x_stripes[stripe_idx] += vx
             vel_y_stripes[stripe_idx] += vy
+            vel_x_normalized_stripes[stripe_idx] += vx / math.sqrt(vx**2+vy**2)
+            vel_y_normalized_stripes[stripe_idx] += vy / math.sqrt(vx**2+vy**2)
             average_module_x_vel[stripe_idx] += abs(vx)
             average_module_y_vel[stripe_idx] += abs(vy)
             average_speed_stripes[stripe_idx] += math.sqrt(vx**2+vy**2)
@@ -65,7 +71,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
                 average_module_x_vel[k] = average_module_x_vel[k] / n_spots
                 average_module_y_vel[k] = average_module_y_vel[k] / n_spots
                 average_speed_stripes[k] = average_speed_stripes[k] / n_spots
-                module_average_velocity_stripes[k] = math.sqrt(vel_x_stripes[k]**2 + vel_y_stripes[k]**2) / n_spots
+                module_average_velocity_stripes[k] = math.sqrt(vel_x_normalized_stripes[k]**2 + vel_y_normalized_stripes[k]**2) / n_spots
 
         # Create the figure and axis objects
         fig, ax1 = plt.subplots()
@@ -74,7 +80,8 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         ax1.plot(average_speed_stripes, 'r-', label='Average speed')
         ax1.plot(average_module_x_vel, 'g-', label='Average module of x velocity')
         ax1.plot(average_module_y_vel, 'b-', label='Average module of y velocity')
-        ax1.plot(module_average_velocity_stripes, 'm-', label='Module of average velocity')
+        #ax1.plot(module_average_velocity_stripes, 'm-', label='Module of average normalized velocity')
+        ax1.set_ylim(0, 30)
         ax1.set_xlabel('Index')
         ax1.set_ylabel(r'Speed ($\mu$m/h)')
         ax1.legend(loc='upper left')
@@ -83,8 +90,10 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         ax2 = ax1.twinx()
 
         # Plot the fourth series on the right axis
-        ax2.plot(n_spots_stripes, 'y-', label='Number of spots')
-        ax2.set_ylabel('Amount')
+        #ax2.plot(n_spots_stripes, 'y-', label='Number of spots')
+        ax2.plot(module_average_velocity_stripes, 'm-', label='Module of average normalized velocity') #####
+        ax2.set_ylim(0, 1)
+        ax2.set_ylabel('Module of average normalized velocity')
 
         # Show the legend for the right axis
         ax2.legend(loc='upper right')
@@ -92,8 +101,9 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         plt.title('frame '+str(t))
 
         # Save the figure as a PNG image
-        plt.savefig(os.path.join(results_plots_dir,"plot_"+str(t)))        
+        plt.savefig(os.path.join(results_plots_dir,"plot_"+str(t)))
+        plt.close()       
 
-for option in [12]:
+for option in [12, 10, 8, 6, 4]:
     get_velocity_stripes(delta_frames=option, stripe_amount = 10)
 

@@ -11,7 +11,7 @@ results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experime
 csv_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_c/data_extracted/"
 csv_name = "frames_1_80.csv"
 
-time_resolution = 2/60 # 2 minutes between frames, to hours
+time_resolution = 3/60 # 3 minutes between frames, to hours
 space_resolution = 1.5 # 1,5 microns per pixel
 
 # Define delta_frames to calculate velocity between frames. 
@@ -33,13 +33,15 @@ def get_velocity_data(delta_frames):
     for i in range(0, len(df.TRACK_ID.unique())):
         df_filtered = df[df['TRACK_ID'] == i]
         df_filtered = df_filtered.reset_index(drop=True)
-
-        if len(df_filtered) < delta_frames:
-            continue
+        
+        if len(df_filtered) <= delta_frames:
+            continue # Do not calculate because it is impossible.
 
         else:
+
             # Iterate over the frames (except the last, velocities are undefined here) in the track.
             for j in range(0, len(df_filtered)-delta_frames, delta_frames): # Velocity will be calculated for every frame possible.
+
                 frame = df_filtered['FRAME'][j]
                 
                 if frame != j:
@@ -47,19 +49,15 @@ def get_velocity_data(delta_frames):
 
                 pos_x = df_filtered['POSITION_X'][j]
                 pos_y = df_filtered['POSITION_Y'][j]
-                vel_x = (space_resolution/time_resolution) * (df_filtered['POSITION_X'][j + delta_frames] - df_filtered['POSITION_X'][j])
-                vel_y = - (space_resolution/time_resolution) * (df_filtered['POSITION_Y'][j + delta_frames] - df_filtered['POSITION_Y'][j]) # Fiji inverts y-axis
+                vel_x = (space_resolution/time_resolution) * (1/delta_frames) * (df_filtered['POSITION_X'][j + delta_frames] - df_filtered['POSITION_X'][j])
+                vel_y = - (space_resolution/time_resolution) * (1/delta_frames) * (df_filtered['POSITION_Y'][j + delta_frames] - df_filtered['POSITION_Y'][j]) # Fiji inverts y-axis
                 diff_t = df_filtered['FRAME'][j + delta_frames] - df_filtered['FRAME'][j]
                 track_id = df_filtered['TRACK_ID'][j]
-
-                if diff_t == 2:
-                    continue
 
                 # Define a tuple to be added to the DataFrame
                 new_tuple = (frame, pos_x, pos_y, vel_x, vel_y, diff_t, track_id)
                 # Add the tuple to the DataFrame
                 df_general.loc[len(df_general)] = new_tuple
-
 
     df_general.to_csv(os.path.join(results_data_delta_dir, new_csv_name), index=False)
 
