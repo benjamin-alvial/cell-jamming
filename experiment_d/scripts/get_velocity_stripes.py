@@ -24,6 +24,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
 
     results_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_velocity/velocity_delta_" + str(delta_frames)
     expfit_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_expfit/expfit_delta_" + str(delta_frames)
+    stripesobs_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_stripesobs/stripesobs_delta_" + str(delta_frames)
 
     df_general = pd.read_csv(os.path.join(data_delta_dir, new_csv_name))
 
@@ -33,7 +34,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
 
     # Each element of the following lists is a list [O0, O1, ..., Oi]
     # where Oj is the observable O measured in stripe of index j
-	average_module_x_vel_in_time = []
+    average_module_x_vel_in_time = []
     average_module_y_vel_in_time = []
     average_speed_stripes_in_time = []
     module_average_velocity_stripes_in_time = []
@@ -96,9 +97,9 @@ def get_velocity_stripes(delta_frames, stripe_amount):
                 module_average_velocity_stripes[k] = math.sqrt(vel_x_normalized_stripes[k]**2 + vel_y_normalized_stripes[k]**2) / n_spots
 
         average_module_x_vel_in_time.append(average_module_x_vel)
-    	average_module_y_vel_in_time.append(average_module_y_vel)
-    	average_speed_stripes_in_time.append(average_speed_stripes)
-    	module_average_velocity_stripes_in_time.append(module_average_velocity_stripes)
+        average_module_y_vel_in_time.append(average_module_y_vel)
+        average_speed_stripes_in_time.append(average_speed_stripes)
+        module_average_velocity_stripes_in_time.append(module_average_velocity_stripes)
 
         # Create the figure and axis objects
         fig, ax1 = plt.subplots()
@@ -193,41 +194,45 @@ def get_velocity_stripes(delta_frames, stripe_amount):
     plt.close()
 
     # ======== Plotting observables by stripe ========
-    """
+    
     average_module_x_vel_in_time = np.array(average_module_x_vel_in_time)
     average_module_y_vel_in_time = np.array(average_module_y_vel_in_time)
     average_speed_stripes_in_time = np.array(average_speed_stripes_in_time)
     module_average_velocity_stripes_in_time = np.array(module_average_velocity_stripes_in_time)
-    for stripe_idx in range(0, len()):
-    	x = frame_list
-    	y1 = 
-    	y2 = 
-    	y3 = 
 
-	    fig, ax1 = plt.subplots()
+    for stripe_idx in range(0, stripe_amount):
+        x = frame_list
+        y1 = average_module_x_vel_in_time[:, stripe_idx]
+        y2 = average_module_y_vel_in_time[:, stripe_idx]
+        y3 = average_speed_stripes_in_time[:, stripe_idx]
+        y4 = module_average_velocity_stripes_in_time[:, stripe_idx]
 
-	    ax1.scatter(frame_list, a_list, c='green', label='Parameter a')
-	    ax1.scatter(frame_list, a_list, c='green', label='Parameter a')
-	      
-	    ax1.set_ylim(0, 60)
-	    ax1.set_xlabel('Frame')
-	    ax1.set_ylabel('Parameter a')
-	    ax1.legend(loc='upper left')
+        fig, ax1 = plt.subplots()
 
-	    ax2 = ax1.twinx()
-	    ax2.scatter(frame_list, b_list, c='blue', label='Parameter b')
-	    ax2.set_ylim(0, 0.2)
-	    ax2.set_ylabel('Parameter b')
-	    ax2.legend(loc='upper right')
+        ax1.scatter(frame_list, y1, c='green', label='Average module of x velocity')
+        ax1.scatter(frame_list, y2, c='blue', label='Average module of y velocity')
+        ax1.scatter(frame_list, y3, c='red', label='Average speed')
+          
+        ax1.set_ylim(0, 60)
+        ax1.set_xlabel('Frame')
+        ax1.set_ylabel(r'Speed ($\mu$m/h)')
+        ax1.legend(loc='upper left')
 
-	    plt.title('Exponential parameters for a*e^(-bR)')
+        ax2 = ax1.twinx()
+        ax2.scatter(frame_list, y4, c='magenta', label='Module of average normalized velocity')
+        ax2.set_ylim(0, 1)
+        ax2.set_ylabel('Module of average normalized velocity')
+        ax2.legend(loc='upper right')
 
-	    plt.savefig(os.path.join(expfit_plots_dir,"parameters"))
-	    plt.close()
-	"""
+        plt.title('stripe index ' + str(stripe_idx))
+
+        plt.savefig(os.path.join(stripesobs_plots_dir,"stripesobs_"+str(stripe_idx)))
+        plt.close()
+    
 
 
 for option in [12, 10, 8, 6, 4]:
     print('Plotting for delta_frames=' + str(option))
     get_velocity_stripes(delta_frames=option, stripe_amount = 10)
+    print('Plotting successful')
 
