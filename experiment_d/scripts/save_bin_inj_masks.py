@@ -20,7 +20,7 @@ results_injection_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/expe
 results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/csvs_final_mask/"
 
 offset = 20
-delta_x = 100
+delta_x = 50
 
 for i in range(1, 186):
     img_border_name = 'final_border_1_185__' + str(i) + '.png'
@@ -96,4 +96,7 @@ for i in range(1, 186):
 
     mask_array = generate_mask.get_mask(injection_image, offset, delta_x)
     np.savetxt(os.path.join(results_masks_dir,csv_mask_name), mask_array, delimiter=',')
-    #generate_mask.visualize_mask(mask_array)
+    print("Mask saved in "+os.path.join(results_masks_dir,csv_mask_name))
+    
+    #if i ==3:
+        #generate_mask.visualize_mask(mask_array)

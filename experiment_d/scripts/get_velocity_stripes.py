@@ -11,11 +11,14 @@ from scipy.optimize import curve_fit
 
 results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/csvs_final_mask/"
 
-def exponential_func(x, a, b):
-    return a * np.exp(-b * x)
+def exponential_func(x, a, b, c):
+    return a * np.exp(-b * x) + c
 
-#def exponential_func_2(x, b):
-    #return np.exp(b * x)
+def fit_exponential(data, start_index):
+    x = np.arange(len(data))
+    y = data[start_index:]
+    popt, _ = curve_fit(exponential_func, x[start_index:], y, p0=[17,0.3,14], maxfev=5000)
+    return popt
 
 def get_velocity_stripes(delta_frames, stripe_amount):
 
@@ -73,7 +76,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
                 continue
 
             stripe_idx = int(mask_array[y][x])
-            if stripe_idx < 0 or stripe_idx >= 10:
+            if stripe_idx < 0 or stripe_idx >= stripe_amount:
                 continue
 
             if math.sqrt(vx**2+vy**2) == 0:
@@ -109,7 +112,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         ax1.plot(average_module_x_vel, 'g-', label='Average module of x velocity')
         ax1.plot(average_module_y_vel, 'b-', label='Average module of y velocity')
         #ax1.plot(module_average_velocity_stripes, 'm-', label='Module of average normalized velocity')
-        ax1.set_ylim(0, 60)
+        ax1.set_ylim(0, 45)
         ax1.set_xlabel('Index')
         ax1.set_ylabel(r'Speed ($\mu$m/h)')
         ax1.legend(loc='upper left')
@@ -134,6 +137,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
 
 
         # ======== Fit exponential to speed ========
+        
         fig, ax = plt.subplots()
 
         y = average_speed_stripes
@@ -143,23 +147,23 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         x = np.array(x)
 
         # Fit the exponential function to the data
-        popt, pcov = curve_fit(exponential_func, x, y)
-        #popt, pcov = curve_fit(exponential_func_2, x, y)
+        params = []
+        for i in range(5):
+            popt = fit_exponential(y, i)
+            params.append(popt)
 
-        # Extract the optimized parameters
-        a_fit, b_fit = popt
-        #b_fit = popt
+            # Extract the optimized parameters
+            a_fit, b_fit, c_fit = popt
 
-        # Create points for the fitted curve
-        x_fit = np.linspace(0, max(x), 100)
-        y_fit = exponential_func(x_fit, a_fit, b_fit)
-        #y_fit = exponential_func_2(x_fit, b_fit)
+            # Create points for the fitted curve
+            x_fit = np.linspace(0, max(x), 100)
+            y_fit = exponential_func(x_fit, a_fit, b_fit, c_fit)
 
-        # Plot the data and the fit
-        ax.scatter(x, y, c='red', label='Average speed')
-        ax.plot(x_fit, y_fit, 'y-', label=f'Exponential Fit: a={a_fit:.2f}, b={b_fit:.2f}')
-        #ax.plot(x_fit, y_fit, 'y-', label=f'Exponential Fit: a=1, b={b_fit}')
-        ax.set_ylim(0, 60)
+            # Plot the data and the fit
+            ax.scatter(x, y, c='red')
+            ax.plot(x_fit, y_fit, label=f'expfit: a={a_fit:.2f}, b={b_fit:.2f}, c={c_fit:.2f}')
+
+        ax.set_ylim(0, 45)
         ax.set_xlabel('Index')
         ax.set_ylabel(r'Speed ($\mu$m/h)')
         ax.legend()
@@ -167,31 +171,34 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         plt.title('frame '+str(t))
         plt.savefig(os.path.join(expfit_plots_dir,"expfit_"+str(t)))
         plt.close()
+        
 
         # ======== Save parameters for lambda vs. frame plot ========
-        a_list.append(a_fit)
-        b_list.append(b_fit)
+        #a_list.append(a_fit)
+        #b_list.append(b_fit)
         frame_list.append(t)
-
+    """
     fig, ax1 = plt.subplots()
 
     ax1.scatter(frame_list, a_list, c='green', label='Parameter a')
       
-    ax1.set_ylim(0, 60)
+    ax1.set_ylim(0, 45)
     ax1.set_xlabel('Frame')
     ax1.set_ylabel('Parameter a')
     ax1.legend(loc='upper left')
 
     ax2 = ax1.twinx()
-    ax2.scatter(frame_list, b_list, c='blue', label='Parameter b')
-    ax2.set_ylim(0, 0.2)
-    ax2.set_ylabel('Parameter b')
+    lambda_list = [1/x for x in b_list]
+    ax2.scatter(frame_list, lambda_list, c='blue', label='Parameter lambda=1/b')
+    ax2.set_ylim(0, 5)
+    ax2.set_ylabel('Parameter lambda=1/b')
     ax2.legend(loc='upper right')
 
     plt.title('Exponential parameters for a*e^(-bR)')
 
     plt.savefig(os.path.join(expfit_plots_dir,"parameters"))
     plt.close()
+    """
 
     # ======== Plotting observables by stripe ========
     
@@ -213,7 +220,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         ax1.scatter(frame_list, y2, c='blue', label='Average module of y velocity')
         ax1.scatter(frame_list, y3, c='red', label='Average speed')
           
-        ax1.set_ylim(0, 60)
+        ax1.set_ylim(0, 45)
         ax1.set_xlabel('Frame')
         ax1.set_ylabel(r'Speed ($\mu$m/h)')
         ax1.legend(loc='upper left')
@@ -231,8 +238,8 @@ def get_velocity_stripes(delta_frames, stripe_amount):
     
 
 
-for option in [12, 10, 8, 6, 4]:
+for option in [4]:
     print('Plotting for delta_frames=' + str(option))
-    get_velocity_stripes(delta_frames=option, stripe_amount = 10)
+    get_velocity_stripes(delta_frames=option, stripe_amount = 20)
     print('Plotting successful')
 
