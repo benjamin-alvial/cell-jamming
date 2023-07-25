@@ -28,12 +28,12 @@ def get_velocity_stripes(delta_frames, stripe_amount):
     results_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_velocity/velocity_delta_" + str(delta_frames)
     expfit_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_expfit/expfit_delta_" + str(delta_frames)
     stripesobs_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_stripesobs/stripesobs_delta_" + str(delta_frames)
+    stdev_plots_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/plots_stdev/stdev_delta_" + str(delta_frames)
 
     df_general = pd.read_csv(os.path.join(data_delta_dir, new_csv_name))
 
-    a_list = []
-    b_list = []
     frame_list = []
+    b_matrix = []
 
     # Each element of the following lists is a list [O0, O1, ..., Oi]
     # where Oj is the observable O measured in stripe of index j
@@ -63,6 +63,8 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         average_module_y_vel = [0] * stripe_amount # 1/N * sum(|vect vyj|)
         average_module_x_vel = [0] * stripe_amount # 1/N * sum(|vect vxj|)
         module_average_velocity_stripes = [0] * stripe_amount # | 1/N * sum((vect j)/|vect j|) |
+        average_speed_squares_stripes = [0] * stripe_amount
+        stdev_stripes = [0] * stripe_amount
 
         csv_mask_name = 'final_mask_1_185__' + str(t) + '.csv'
         mask_array = np.loadtxt(os.path.join(results_masks_dir,csv_mask_name), delimiter=',')
@@ -90,6 +92,7 @@ def get_velocity_stripes(delta_frames, stripe_amount):
             average_module_x_vel[stripe_idx] += abs(vx)
             average_module_y_vel[stripe_idx] += abs(vy)
             average_speed_stripes[stripe_idx] += math.sqrt(vx**2+vy**2)
+            average_speed_squares_stripes[stripe_idx] += vx**2+vy**2
 
         for k in range(0, len(n_spots_stripes)):
             n_spots = n_spots_stripes[k]
@@ -98,6 +101,8 @@ def get_velocity_stripes(delta_frames, stripe_amount):
                 average_module_y_vel[k] = average_module_y_vel[k] / n_spots
                 average_speed_stripes[k] = average_speed_stripes[k] / n_spots
                 module_average_velocity_stripes[k] = math.sqrt(vel_x_normalized_stripes[k]**2 + vel_y_normalized_stripes[k]**2) / n_spots
+                average_speed_squares_stripes[k] = average_speed_squares_stripes[k] / n_spots
+                stdev_stripes[k] = math.sqrt(average_speed_squares_stripes[k]-(average_speed_stripes[k])**2)
 
         average_module_x_vel_in_time.append(average_module_x_vel)
         average_module_y_vel_in_time.append(average_module_y_vel)
@@ -135,6 +140,23 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         plt.savefig(os.path.join(results_plots_dir,"plot_"+str(t)))
         plt.close()
 
+        # ======== Plotting speed standard deviation ========
+        # Create the figure and axis objects
+        fig, ax = plt.subplots()
+
+        # Plot the first four series on the left axis
+        ax.plot(stdev_stripes, label='Standard deviation of speed')
+        #ax1.plot(module_average_velocity_stripes, 'm-', label='Module of average normalized velocity')
+        ax.set_ylim(0, 20)
+        ax.set_xlabel('Index')
+        ax.set_ylabel(r'Standard deviation ($\mu$m/h)')
+        ax.legend(loc='upper left')
+
+        plt.title('frame '+str(t))
+
+        # Save the figure as a PNG image
+        plt.savefig(os.path.join(stdev_plots_dir,"plot_"+str(t)))
+        plt.close()
 
         # ======== Fit exponential to speed ========
         
@@ -148,12 +170,14 @@ def get_velocity_stripes(delta_frames, stripe_amount):
 
         # Fit the exponential function to the data
         params = []
+        b_list = []
         for i in range(5):
             popt = fit_exponential(y, i)
             params.append(popt)
 
             # Extract the optimized parameters
             a_fit, b_fit, c_fit = popt
+            b_list.append(b_fit)
 
             # Create points for the fitted curve
             x_fit = np.linspace(0, max(x), 100)
@@ -174,31 +198,28 @@ def get_velocity_stripes(delta_frames, stripe_amount):
         
 
         # ======== Save parameters for lambda vs. frame plot ========
-        #a_list.append(a_fit)
-        #b_list.append(b_fit)
-        frame_list.append(t)
-    """
-    fig, ax1 = plt.subplots()
+        b_matrix.append(b_list)
+        frame_list.append(t) 
+    
+    b_matrix = np.array(b_matrix)
+    b_matrix = np.transpose(b_matrix)
+    fig, ax = plt.subplots()
 
-    ax1.scatter(frame_list, a_list, c='green', label='Parameter a')
-      
-    ax1.set_ylim(0, 45)
-    ax1.set_xlabel('Frame')
-    ax1.set_ylabel('Parameter a')
-    ax1.legend(loc='upper left')
+    for i in range(5):
+    	b_list = b_matrix[i,:]
+    	lambda_list = [1/x for x in b_list]
+    	ax.scatter(frame_list, lambda_list, label='lambda=1/b starting from '+str(i))
 
-    ax2 = ax1.twinx()
-    lambda_list = [1/x for x in b_list]
-    ax2.scatter(frame_list, lambda_list, c='blue', label='Parameter lambda=1/b')
-    ax2.set_ylim(0, 5)
-    ax2.set_ylabel('Parameter lambda=1/b')
-    ax2.legend(loc='upper right')
+    ax.set_ylim(0, 20)
+    ax.set_xlabel('Frame')
+    ax.set_ylabel('Parameter lambda=1/b')
+    ax.legend(loc='upper left')
 
-    plt.title('Exponential parameters for a*e^(-bR)')
+    plt.title('Exponential parameter for a*e^(-bR)')
 
     plt.savefig(os.path.join(expfit_plots_dir,"parameters"))
     plt.close()
-    """
+    
 
     # ======== Plotting observables by stripe ========
     
@@ -238,8 +259,8 @@ def get_velocity_stripes(delta_frames, stripe_amount):
     
 
 
-for option in [4]:
+for option in [4, 6, 8, 10, 12]:
     print('Plotting for delta_frames=' + str(option))
-    get_velocity_stripes(delta_frames=option, stripe_amount = 20)
+    get_velocity_stripes(delta_frames=option, stripe_amount = 40)
     print('Plotting successful')
 

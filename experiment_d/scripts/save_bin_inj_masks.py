@@ -20,7 +20,7 @@ results_injection_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/expe
 results_masks_dir = "/Users/benjaminalvial/Desktop/Nucleus/cell-jamming/experiment_d/results/csvs_final_mask/"
 
 offset = 20
-delta_x = 50
+delta_x = 25
 
 for i in range(1, 186):
     img_border_name = 'final_border_1_185__' + str(i) + '.png'
